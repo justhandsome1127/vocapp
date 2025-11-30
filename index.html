@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vocabulary Trainer</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Vocabulary Trainer</h1>
+    <p class="subtitle">Choose a level, practice translations, and track your progress.</p>
+  </header>
+
+  <main>
+    <section class="panel" id="level-panel">
+      <div class="panel-header">
+        <h2>Level Practice</h2>
+        <div class="controls">
+          <label for="level-select">Choose level:</label>
+          <select id="level-select"></select>
+          <button id="start-btn">Start / Resume</button>
+        </div>
+      </div>
+      <div class="status" id="progress-status"></div>
+      <div id="question-area" class="card hidden">
+        <div class="question-header">
+          <div>
+            <span class="pill" id="level-pill"></span>
+            <span class="pill" id="question-counter"></span>
+          </div>
+          <div id="last-progress" class="subtle"></div>
+        </div>
+        <div id="prompt" class="prompt"></div>
+        <div id="options" class="options"></div>
+        <div id="feedback" class="feedback"></div>
+        <div id="post-actions" class="post-actions hidden">
+          <button id="guess-btn" class="secondary">I guessed — add to wrong notebook</button>
+          <button id="next-btn">Next</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="wrong-panel">
+      <div class="panel-header">
+        <h2>Wrong Notebook</h2>
+        <div class="controls">
+          <button id="practice-wrong-btn">Practice wrong items</button>
+          <button id="clear-wrong-btn" class="secondary">Clear notebook</button>
+        </div>
+      </div>
+      <div id="wrong-summary" class="status"></div>
+      <div id="wrong-question-area" class="card hidden">
+        <div class="question-header">
+          <span class="pill" id="wrong-counter"></span>
+        </div>
+        <div id="wrong-prompt" class="prompt"></div>
+        <div id="wrong-options" class="options"></div>
+        <div id="wrong-feedback" class="feedback"></div>
+        <div id="wrong-post-actions" class="post-actions hidden">
+          <button id="wrong-next-btn">Next</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Progress and wrong notebook are saved locally in your browser.</p>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html>
