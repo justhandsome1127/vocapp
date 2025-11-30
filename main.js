@@ -232,6 +232,9 @@ function buildOptions(correct, pool) {
 }
 
 function setQuestion(index) {
+  const data = state.dataByLevel[state.currentLevel];
+  if (!data || data.length === 0) return;
+  
   const order = getLevelOrder(state.currentLevel);
   const realIndex = order[index % data.length];
   const question = data[realIndex];
