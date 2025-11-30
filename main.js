@@ -17,7 +17,10 @@ const state = {
   combinedPool: [],
   currentLevel: null,
   currentIndex: 0,
+  levelOrder: {},
+
   wrongIndex: 0,
+  wrongOrder: [],
 };
 
 const elements = {
@@ -45,6 +48,10 @@ const elements = {
   wrongPostActions: document.getElementById("wrong-post-actions"),
   wrongNextBtn: document.getElementById("wrong-next-btn"),
   wrongCounter: document.getElementById("wrong-counter"),
+
+  viewWrongBtn: document.getElementById("view-wrong-btn"),
+  wrongList: document.getElementById("wrong-list"),
+  wrongListContent: document.getElementById("wrong-list-content"),
 };
 
 function parseCSV(text) {
@@ -134,6 +141,10 @@ function addToWrongNotebook(item) {
     saveWrongNotebook(current);
   }
   renderWrongSummary();
+
+  if (!elements.wrongList.classList.contains("hidden")) {
+    renderWrongList();
+  }
 }
 
 function removeFromWrongNotebook(item) {
@@ -152,6 +163,45 @@ function renderWrongSummary() {
       : `${count} item${count === 1 ? "" : "s"} saved in your wrong notebook.`;
 }
 
+function renderWrongList() {
+  const wrongItems = getWrongNotebook();
+
+  if (wrongItems.length === 0) {
+    elements.wrongListContent.innerHTML = "<p>No wrong items recorded yet.</p>";
+    elements.wrongList.classList.remove("hidden");
+    return;
+  }
+
+  const ul = document.createElement("ul");
+  ul.className = "wrong-list";
+
+  wrongItems.forEach((item, index) => {
+    const li = document.createElement("li");
+
+    // 找出對應等級名稱（可能有舊資料沒有 level）
+    const levelLabel = item.level
+      ? (levels.find((l) => l.id === item.level)?.name || item.level)
+      : "";
+
+    li.innerHTML = `
+      <span class="wrong-index">${index + 1}.</span>
+      <span class="wrong-en">${item.english}</span>
+      <span class="wrong-zh">— ${item.chinese}</span>
+      ${
+        levelLabel
+          ? `<span class="pill wrong-level-pill">${levelLabel}</span>`
+          : ""
+      }
+    `;
+
+    ul.appendChild(li);
+  });
+
+  elements.wrongListContent.innerHTML = "";
+  elements.wrongListContent.appendChild(ul);
+  elements.wrongList.classList.remove("hidden");
+}
+
 function shuffle(array) {
   const arr = [...array];
   for (let i = arr.length - 1; i > 0; i -= 1) {
@@ -159,6 +209,19 @@ function shuffle(array) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+function getLevelOrder(levelId) {
+  const data = state.dataByLevel[levelId];
+  if (!data || data.length === 0) return [];
+
+  const current = state.levelOrder[levelId];
+  // 如果還沒建立，或長度跟資料數量不同（之後有新增單字也能自動重建）
+  if (!current || current.length !== data.length) {
+    const indices = Array.from({ length: data.length }, (_, i) => i);
+    state.levelOrder[levelId] = shuffle(indices);
+  }
+  return state.levelOrder[levelId];
 }
 
 function buildOptions(correct, pool) {
@@ -169,10 +232,10 @@ function buildOptions(correct, pool) {
 }
 
 function setQuestion(index) {
-  const data = state.dataByLevel[state.currentLevel];
-  if (!data || data.length === 0) return;
+  const order = getLevelOrder(state.currentLevel);
+  const realIndex = order[index % data.length];
+  const question = data[realIndex];
 
-  const question = data[index % data.length];
   const options = buildOptions(question, state.combinedPool);
   const progress = getProgress();
 
@@ -255,8 +318,16 @@ function buildWrongQuestion() {
     return;
   }
 
+  if (!state.wrongOrder || state.wrongOrder.length !== wrongItems.length) {
+    state.wrongOrder = shuffle(
+      Array.from({ length: wrongItems.length }, (_, i) => i)
+    );
+    state.wrongIndex = 0;
+  }
+
   state.wrongIndex = state.wrongIndex % wrongItems.length;
-  const question = wrongItems[state.wrongIndex];
+  const realIndex = state.wrongOrder[state.wrongIndex];
+  const question = wrongItems[realIndex];
   const options = buildOptions(question, state.combinedPool);
 
   elements.wrongCounter.textContent = `Question ${state.wrongIndex + 1} / ${wrongItems.length}`;
@@ -302,7 +373,16 @@ function nextWrongQuestion() {
     elements.wrongArea.classList.add("hidden");
     return;
   }
-  state.wrongIndex = (state.wrongIndex + 1) % wrongItems.length;
+  
+  state.wrongIndex += 1;
+  if (state.wrongIndex >= wrongItems.length) {
+    // 走完一輪之後重新洗牌，從新的一輪亂數順序開始
+    state.wrongOrder = shuffle(
+      Array.from({ length: wrongItems.length }, (_, i) => i)
+    );
+    state.wrongIndex = 0;
+  }
+
   buildWrongQuestion();
 }
 
@@ -311,6 +391,9 @@ function clearWrongNotebook() {
     saveWrongNotebook([]);
     renderWrongSummary();
     elements.wrongArea.classList.add("hidden");
+
+    elements.wrongList.classList.add("hidden");
+    elements.wrongListContent.innerHTML = "";
   }
 }
 
@@ -320,6 +403,15 @@ function initEvents() {
   elements.practiceWrongBtn.addEventListener("click", buildWrongQuestion);
   elements.wrongNextBtn.addEventListener("click", nextWrongQuestion);
   elements.clearWrongBtn.addEventListener("click", clearWrongNotebook);
+
+  elements.viewWrongBtn.addEventListener("click", () => {
+    const isHidden = elements.wrongList.classList.contains("hidden");
+    if (isHidden) {
+      renderWrongList();
+    } else {
+      elements.wrongList.classList.add("hidden");
+    }
+  });
 }
 
 async function init() {

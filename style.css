@@ -181,6 +181,44 @@ button.secondary {
   font-size: 0.95rem;
 }
 
+.wrong-list-content {
+  max-height: 320px;
+  overflow-y: auto;
+  font-size: 0.95rem;
+}
+
+.wrong-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.wrong-list li {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.wrong-index {
+  width: 2rem;
+  font-weight: 600;
+}
+
+.wrong-en {
+  font-weight: 600;
+}
+
+.wrong-zh {
+  opacity: 0.85;
+}
+
+.wrong-level-pill {
+  margin-left: auto;
+  font-size: 0.75rem;
+}
+
 footer {
   text-align: center;
   margin-top: 1rem;
